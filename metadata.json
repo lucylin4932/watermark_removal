@@ -1,0 +1,7 @@
+{
+  "name": "Copy of AI Watermark Eraser",
+  "description": "A minimalist AI-powered image tool to instantly remove watermarks and text from photos with high precision.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
