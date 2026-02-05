@@ -8,7 +8,14 @@ export const processImageWithGemini = async (
   mimeType: string,
   prompt: string = "Please remove all watermarks, logos, brand names, and overlapping text from this image while preserving the background and subject details perfectly. Ensure the result is clean and natural."
 ): Promise<string | null> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = process.env.API_KEY;
+  
+  if (!apiKey) {
+    console.error("Gemini API Key is missing. Please ensure process.env.API_KEY is configured.");
+    throw new Error("API configuration error.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
@@ -28,7 +35,13 @@ export const processImageWithGemini = async (
       },
     });
 
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
+    if (!response.candidates || response.candidates.length === 0) {
+      console.warn("Gemini AI returned no results.");
+      return null;
+    }
+
+    // 遍历结果寻找图像数据
+    for (const part of response.candidates[0].content.parts) {
       if (part.inlineData) {
         return `data:${mimeType};base64,${part.inlineData.data}`;
       }
@@ -36,7 +49,7 @@ export const processImageWithGemini = async (
     
     return null;
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Gemini API Request Failed:", error);
     throw error;
   }
 };
